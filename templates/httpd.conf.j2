@@ -2,7 +2,7 @@
   ServerName {{ apache_fqdn }}
   # TODO: ServerAlias
 
-{% if apache_https | default(false) %}
+{% if apache_https %}
   Redirect "/" "https://{{ apache_fqdn }}/"
 {% endif %}
 
@@ -11,7 +11,7 @@
   CustomLog "{{ apache_log_path }}/{{ apache_hostname }}-access.log" combined
 </VirtualHost>
 
-{% if apache_https | default(false) %}
+{% if apache_https %}
 <VirtualHost *:443>
    ServerName {{ apache_hostname }}
 

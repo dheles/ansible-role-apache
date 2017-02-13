@@ -1,8 +1,8 @@
 ---
-apache_https: false
-apache_hostname:    "{{ hostname | default('myapp') }}"
-apache_domainname:  "{{ domainname | default('test.dev') }}"
-apache_log_path:    "/var/log/{{ apache_service }}"
+apache_https:               false
+apache_hostname:            "{{ hostname | default('myapp') }}"
+apache_domainname:          "{{ domainname | default('test.dev') }}"
+apache_log_path:            "/var/log/{{ apache_service }}"
 
 # SSL vars
 ssl_self_sign_cert:         false
