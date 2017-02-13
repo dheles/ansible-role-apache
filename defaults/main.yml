@@ -1,2 +1,15 @@
 ---
-# defaults file for apache
+apache_https: false
+apache_hostname:    "{{ hostname | default('myapp') }}"
+apache_domainname:  "{{ domainname | default('test.dev') }}"
+apache_log_path:    "/var/log/{{ apache_service }}"
+
+# SSL vars
+ssl_self_sign_cert:         false
+ssl_certificate_file:       "{{ apache_fqdn | replace('.', '_') }}.crt"
+ssl_certificate_key_file:   "{{ apache_fqdn | replace('.', '_') }}.key"
+ssl_certificate_chain_file: false
+ssl_certificate_path:       "/etc/pki/tls/certs"
+ssl_certificate_key_path:   "/etc/pki/tls/private"
+# TODO: remove institution-specific defaults
+ssl_certificate_subj:       "/C=US/ST=Maryland/L=Baltimore/O=JHU/CN={{ apache_fqdn }}"

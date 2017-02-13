@@ -1,2 +1,47 @@
 ---
-# tasks file for apache
+- name: include os-specific vars
+  include_vars: "{{ansible_os_family}}.yml"
+
+- name: test variables
+  debug:
+    msg: "apache_fqdn: {{ apache_fqdn }}"
+
+- name: install apache packages
+  package: name={{ item }} state=present
+  become: true
+  with_items:
+    - "{{ apache_service }}"
+
+- name: install packages to support https
+  package: name={{ item }} state=present
+  become: true
+  with_items:
+    - mod_ssl
+    - openssl
+  when: apache_https
+
+- name: configure apache
+  template:
+    src: "templates/{{ apache_service }}.conf.j2"
+    dest: "/etc/{{ apache_service }}/conf.d/{{ apache_hostname }}.conf"
+  become: true
+  notify: restart apache
+
+- name: create self-signed SSL cert
+  become: true
+  command: >
+    openssl req -new -nodes -x509
+    -subj "{{ ssl_certificate_subj }}"
+    -days 3650
+    -keyout "{{ ssl_certificate_key_path }}/{{ ssl_certificate_key_file }}"
+    -out "{{ ssl_certificate_path}}/{{ ssl_certificate_file }}"
+    -extensions v3_ca
+    creates="{{ ssl_certificate_path}}/{{ ssl_certificate_file }}"
+  when: "{{ ssl_self_sign_cert }}"
+
+- name: check if apache service is running
+  service:
+    name: "{{ apache_service }}"
+    state: started
+  become: true
+  register: apache_status

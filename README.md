@@ -9,7 +9,7 @@ WIP Notice
 This role is a Work-In-Progress. It is limited in the following ways:
 
 * Simply installs and does just enough configuration to run
-* Only tested within very few OSes/versions
+* Currently, only CentOS7 is supported
 
 Requirements
 ------------
