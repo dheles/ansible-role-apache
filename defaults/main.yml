@@ -11,5 +11,4 @@ ssl_certificate_key_file:   "{{ apache_fqdn | replace('.', '_') }}.key"
 ssl_certificate_chain_file: false
 ssl_certificate_path:       "/etc/pki/tls/certs"
 ssl_certificate_key_path:   "/etc/pki/tls/private"
-# TODO: remove institution-specific defaults
-ssl_certificate_subj:       "/C=US/ST=Maryland/L=Baltimore/O=JHU/CN={{ apache_fqdn }}"
+ssl_certificate_subj:       "/CN={{ apache_fqdn }}"
