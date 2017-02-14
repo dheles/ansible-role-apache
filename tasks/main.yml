@@ -20,28 +20,72 @@
     - openssl
   when: apache_https
 
-- name: create self-signed SSL cert
+  # begin self-signed block
+- block:
+  - name: create self-signed SSL cert
+    command: >
+      openssl req -new -nodes -x509
+      -subj "{{ ssl_certificate_subj }}"
+      -days 365
+      -newkey rsa:4096
+      -keyout "{{ ssl_certificate_key_path }}/{{ ssl_certificate_key_file }}"
+      -out "{{ ssl_certificate_path}}/{{ ssl_certificate_file }}"
+      creates="{{ ssl_certificate_path}}/{{ ssl_certificate_file }}"
+    register: key
+
+  - name: generate DH parameters for forward security
+    command: >
+      openssl dhparam
+      -out "{{ ssl_certificate_path}}/dhparam.pem"
+      2048
+      creates="{{ ssl_certificate_path}}/dhparam.pem"
+    async: 120
+    poll: 2
+    register: params
+
+  # - name: append parameters to the certificate
+  #   shell: >
+  #     "cat {{ ssl_certificate_path}}/dhparam.pem | sudo tee -a {{ ssl_certificate_path}}/{{ ssl_certificate_file }}"
+  #   args:
+  #     executable: "/bin/bash"
+  #   when: key.changed or params.changed
+  #   become: true
+
+  - name: load parameters into a variable, since no sane shit will work
+    shell: "cat {{ ssl_certificate_path}}/dhparam.pem"
+    register: param_contents
+    when: key.changed or params.changed
+
+  - name: append parameters to the certificate
+    blockinfile:
+      block: "{{ param_contents.stdout }}"
+      dest: "{{ ssl_certificate_path}}/{{ ssl_certificate_file }}"
+      marker: ""
+    when: key.changed or params.changed
+
+    # TODO: confirm this is necessary or remove
+  - name: remove blank lines from the certificate
+    lineinfile:
+      dest: "{{ ssl_certificate_path}}/{{ ssl_certificate_file }}"
+      regexp: "^$"
+      line: ""
+      state: absent
+
+  # end self-signed block
   become: true
-  command: >
-    openssl req -new -nodes -x509
-    -subj "{{ ssl_certificate_subj }}"
-    -days 3650
-    -keyout "{{ ssl_certificate_key_path }}/{{ ssl_certificate_key_file }}"
-    -out "{{ ssl_certificate_path}}/{{ ssl_certificate_file }}"
-    -extensions v3_ca
-    creates="{{ ssl_certificate_path}}/{{ ssl_certificate_file }}"
   when: "{{ ssl_self_sign_cert }}"
 
-- name: configure apache
-  template:
-    src: "templates/{{ apache_service }}.conf.j2"
-    dest: "/etc/{{ apache_service }}/conf.d/{{ apache_hostname }}.conf"
-  become: true
-  notify: restart apache
 
-- name: check if apache service is running
-  service:
-    name: "{{ apache_service }}"
-    state: started
-  become: true
-  register: apache_status
+# - name: configure apache
+#   template:
+#     src: "templates/{{ apache_service }}.conf.j2"
+#     dest: "/etc/{{ apache_service }}/conf.d/{{ apache_hostname }}.conf"
+#   become: true
+#   notify: restart apache
+#
+# - name: check if apache service is running
+#   service:
+#     name: "{{ apache_service }}"
+#     state: started
+#   become: true
+#   register: apache_status
