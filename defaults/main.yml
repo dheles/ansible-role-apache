@@ -12,3 +12,4 @@ ssl_certificate_chain_file: false
 ssl_certificate_path:       "/etc/pki/tls/certs"
 ssl_certificate_key_path:   "/etc/pki/tls/private"
 ssl_certificate_subj:       "/CN={{ apache_fqdn }}"
+ssl_support_legacy_clients: true
