@@ -33,59 +33,44 @@
       creates="{{ ssl_certificate_path}}/{{ ssl_certificate_file }}"
     register: key
 
-  - name: generate DH parameters for forward security
+  - name: generate DH parameters for perfect forward secrecy
     command: >
       openssl dhparam
       -out "{{ ssl_certificate_path}}/dhparam.pem"
       2048
       creates="{{ ssl_certificate_path}}/dhparam.pem"
-    async: 120
-    poll: 2
     register: params
 
-  # - name: append parameters to the certificate
-  #   shell: >
-  #     "cat {{ ssl_certificate_path}}/dhparam.pem | sudo tee -a {{ ssl_certificate_path}}/{{ ssl_certificate_file }}"
-  #   args:
-  #     executable: "/bin/bash"
-  #   when: key.changed or params.changed
-  #   become: true
+  - wait_for:
+      path: "{{ ssl_certificate_path}}/dhparam.pem"
 
-  - name: load parameters into a variable, since no sane shit will work
+  - name: load parameters into a variable, to use in the next task
     shell: "cat {{ ssl_certificate_path}}/dhparam.pem"
     register: param_contents
     when: key.changed or params.changed
 
+    # NOTE: going to the trouble to remove header and footer, so we can use them as markers for the block
   - name: append parameters to the certificate
     blockinfile:
-      block: "{{ param_contents.stdout }}"
+      block: "{{ param_contents.stdout | replace('-----BEGIN DH PARAMETERS-----\n', '') | replace('\n-----END DH PARAMETERS-----', '') }}"
       dest: "{{ ssl_certificate_path}}/{{ ssl_certificate_file }}"
-      marker: ""
+      marker: "-----{mark} DH PARAMETERS-----"
     when: key.changed or params.changed
-
-    # TODO: confirm this is necessary or remove
-  - name: remove blank lines from the certificate
-    lineinfile:
-      dest: "{{ ssl_certificate_path}}/{{ ssl_certificate_file }}"
-      regexp: "^$"
-      line: ""
-      state: absent
 
   # end self-signed block
   become: true
   when: "{{ ssl_self_sign_cert }}"
 
+- name: configure apache
+  template:
+    src: "templates/{{ apache_service }}.conf.j2"
+    dest: "/etc/{{ apache_service }}/conf.d/{{ apache_hostname }}.conf"
+  become: true
+  notify: restart apache
 
-# - name: configure apache
-#   template:
-#     src: "templates/{{ apache_service }}.conf.j2"
-#     dest: "/etc/{{ apache_service }}/conf.d/{{ apache_hostname }}.conf"
-#   become: true
-#   notify: restart apache
-#
-# - name: check if apache service is running
-#   service:
-#     name: "{{ apache_service }}"
-#     state: started
-#   become: true
-#   register: apache_status
+- name: check if apache service is running
+  service:
+    name: "{{ apache_service }}"
+    state: started
+  become: true
+  register: apache_status
