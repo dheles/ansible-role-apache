@@ -1,6 +1,6 @@
 <VirtualHost *:80>
-  ServerName {{ apache_fqdn }}
-  # TODO: ServerAlias
+  ServerName {{ apache_hostname }}
+  ServerAlias {{ apache_fqdn }}
 
 {% if apache_https %}
   Redirect "/" "https://{{ apache_fqdn }}/"
@@ -14,6 +14,7 @@
 {% if apache_https %}
 <VirtualHost *:443>
    ServerName {{ apache_hostname }}
+   ServerAlias {{ apache_fqdn }}
 
    # Logging
    ErrorLog "{{ apache_log_path }}/{{ apache_hostname }}-ssl-error.log"
