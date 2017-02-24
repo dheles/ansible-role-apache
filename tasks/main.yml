@@ -61,6 +61,13 @@
   become: true
   when: "{{ ssl_self_sign_cert }}"
 
+- name: remove welcome (test) page
+  file:
+    dest: "/etc/{{ apache_service }}/conf.d/welcome.conf"
+    state: absent
+  notify: restart apache
+  when: apache_remove_welcome
+
 - name: configure apache
   template:
     src: "templates/{{ apache_service }}.conf.j2"

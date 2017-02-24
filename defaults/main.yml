@@ -1,5 +1,6 @@
 ---
 apache_https:               false
+apache_remove_welcome:      false
 apache_hostname:            "{{ hostname | default('myapp') }}"
 apache_domainname:          "{{ domainname | default('test.dev') }}"
 apache_log_path:            "/var/log/{{ apache_service }}"
