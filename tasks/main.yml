@@ -65,6 +65,7 @@
   file:
     dest: "/etc/{{ apache_service }}/conf.d/welcome.conf"
     state: absent
+  become: true
   notify: restart apache
   when: apache_remove_welcome
 
