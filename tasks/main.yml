@@ -61,6 +61,34 @@
   become: true
   when: "{{ ssl_self_sign_cert }}"
 
+  # Begin provided signed cert block
+- block:
+  - name: create ssl cert from vault
+    copy :
+      content: "{{ ssl_certificate_content }}"
+      dest :  "{{ ssl_certificate_path }}/{{ ssl_certificate_file }}"
+      mode :  "u=r,g=r,o=r"
+    when:  vault_ssl_certificate_content is defined
+
+  - name: create ssl key from vault
+    copy :
+      content: "{{ ssl_certificate_key_content }}"
+      dest :  "{{ ssl_certificate_key_path }}/{{ ssl_certificate_key_file }}"
+      mode :  "u=r,g=,o="
+    when:  vault_ssl_certificate_key_content is defined
+
+  - name: create ssl chain from vault
+    copy :
+      content: "{{ ssl_certificate_chain_content }}"
+      dest :  "{{ ssl_certificate_chain_path }}/{{ ssl_certificate_chain_file }}"
+      mode :  "u=r,g=r,o=r"
+    when:  vault_ssl_certificate_chain_content is defined
+
+  no_log: true
+  become: true
+  when: "{{ not ssl_self_sign_cert }}"
+  # end self-signed block
+
 - name: remove welcome (test) page
   file:
     dest: "/etc/{{ apache_service }}/conf.d/welcome.conf"
