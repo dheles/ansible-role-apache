@@ -20,6 +20,12 @@
     - openssl
   when: apache_https
 
+- name: prevent mutually-exclusive settings
+  assert:
+    that:
+      - not (ssl_self_sign_cert and ssl_provided_cert)
+    msg: "ssl_self_sign_cert and ssl_provided_cert are mutually exclusive"
+
   # begin self-signed block
 - block:
   - name: create self-signed SSL cert
@@ -60,6 +66,34 @@
   # end self-signed block
   become: true
   when: "{{ ssl_self_sign_cert }}"
+
+  # begin provided cert block
+- block:
+  - name: create ssl cert
+    copy :
+      content: "{{ ssl_certificate_content }}"
+      dest :  "{{ ssl_certificate_path }}/{{ ssl_certificate_file }}"
+      mode :  "u=r,g=r,o=r"
+    when:  ssl_certificate_content != ""
+
+  - name: create ssl key
+    copy :
+      content: "{{ ssl_certificate_key_content }}"
+      dest :  "{{ ssl_certificate_key_path }}/{{ ssl_certificate_key_file }}"
+      mode :  "u=r,g=,o="
+    when:  ssl_certificate_key_content  != ""
+
+  - name: create ssl chain
+    copy :
+      content: "{{ ssl_certificate_chain_content }}"
+      dest :  "{{ ssl_certificate_path }}/{{ ssl_certificate_chain_file }}"
+      mode :  "u=r,g=r,o=r"
+    when:  ssl_certificate_chain_content != ""
+
+  no_log: "{{ not apache_debugging }}"
+  become: true
+  when: "{{ ssl_provided_cert }}"
+  # end provided cert block
 
 - name: remove welcome (test) page
   file:

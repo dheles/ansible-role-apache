@@ -1,16 +1,25 @@
 ---
-apache_https:               false
-apache_remove_welcome:      false
-apache_hostname:            "{{ hostname | default('myapp') }}"
-apache_domainname:          "{{ domainname | default('test.test') }}"
-apache_log_path:            "/var/log/{{ apache_service }}"
+apache_https:                   false
+apache_remove_welcome:          false
+apache_hostname:                "{{ hostname | default('myapp') }}"
+apache_domainname:              "{{ domainname | default('test.test') }}"
+apache_log_path:                "/var/log/{{ apache_service }}"
+apache_debugging:               "{{ debugging | default(false) }}"
 
 # SSL vars
-ssl_self_sign_cert:         false
-ssl_certificate_file:       "{{ apache_fqdn | replace('.', '_') }}.crt"
-ssl_certificate_key_file:   "{{ apache_fqdn | replace('.', '_') }}.key"
-ssl_certificate_chain_file: false
-ssl_certificate_path:       "/etc/pki/tls/certs"
-ssl_certificate_key_path:   "/etc/pki/tls/private"
-ssl_certificate_subj:       "/CN={{ apache_fqdn }}"
-ssl_support_legacy_clients: true
+# NOTE: self-signed and provided cert booleans are mutually exclusive
+# ...either or both can be false, but both cannot be true
+ssl_self_sign_cert:             false
+ssl_provided_cert:              false
+ssl_certificate_file:           "{{ apache_fqdn | replace('.', '_') }}.crt"
+ssl_certificate_key_file:       "{{ apache_fqdn | replace('.', '_') }}.key"
+ssl_certificate_chain_file:     false
+ssl_certificate_path:           "/etc/pki/tls/certs"
+ssl_certificate_key_path:       "/etc/pki/tls/private"
+ssl_certificate_subj:           "/CN={{ apache_fqdn }}"
+ssl_support_legacy_clients:     true
+# NOTE: expect the cert and the key (and possibly the chain cert) content
+# to be passed in, if ssl_provided_cert is true
+ssl_certificate_content:        ""
+ssl_certificate_key_content:    ""
+ssl_certificate_chain_content:  ""
