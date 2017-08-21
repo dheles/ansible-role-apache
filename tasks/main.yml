@@ -20,6 +20,12 @@
     - openssl
   when: apache_https
 
+- name: prevent mutually-exclusive settings
+  assert:
+    that:
+      - not (ssl_self_sign_cert and ssl_provided_cert)
+    msg: "ssl_self_sign_cert and ssl_provided_cert are mutually exclusive"
+
   # begin self-signed block
 - block:
   - name: create self-signed SSL cert
@@ -61,33 +67,33 @@
   become: true
   when: "{{ ssl_self_sign_cert }}"
 
-  # Begin provided signed cert block
+  # begin provided cert block
 - block:
-  - name: create ssl cert from vault
+  - name: create ssl cert
     copy :
       content: "{{ ssl_certificate_content }}"
       dest :  "{{ ssl_certificate_path }}/{{ ssl_certificate_file }}"
       mode :  "u=r,g=r,o=r"
-    when:  vault_ssl_certificate_content is defined
+    when:  ssl_certificate_content != ""
 
-  - name: create ssl key from vault
+  - name: create ssl key
     copy :
       content: "{{ ssl_certificate_key_content }}"
       dest :  "{{ ssl_certificate_key_path }}/{{ ssl_certificate_key_file }}"
       mode :  "u=r,g=,o="
-    when:  vault_ssl_certificate_key_content is defined
+    when:  ssl_certificate_key_content  != ""
 
-  - name: create ssl chain from vault
+  - name: create ssl chain
     copy :
       content: "{{ ssl_certificate_chain_content }}"
-      dest :  "{{ ssl_certificate_chain_path }}/{{ ssl_certificate_chain_file }}"
+      dest :  "{{ ssl_certificate_path }}/{{ ssl_certificate_chain_file }}"
       mode :  "u=r,g=r,o=r"
-    when:  vault_ssl_certificate_chain_content is defined
+    when:  ssl_certificate_chain_content != ""
 
-  no_log: true
+  no_log: "{{ not apache_debugging }}"
   become: true
-  when: "{{ not ssl_self_sign_cert }}"
-  # end self-signed block
+  when: "{{ ssl_provided_cert }}"
+  # end provided cert block
 
 - name: remove welcome (test) page
   file:
