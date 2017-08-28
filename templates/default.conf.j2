@@ -3,36 +3,43 @@
   ServerAlias {{ apache_fqdn }}
 
 {% if apache_https %}
+# BEGIN {{ apache_http_redirect_marker }}
   Redirect "/" "https://{{ apache_fqdn }}/"
+# END {{ apache_http_redirect_marker }}
 {% endif %}
 
-  # Logging
+# BEGIN {{ apache_http_logging_marker }}
+  LogLevel {{ apache_log_level }}
   ErrorLog "{{ apache_log_path }}/{{ apache_hostname }}-error.log"
   CustomLog "{{ apache_log_path }}/{{ apache_hostname }}-access.log" combined
+# END {{ apache_http_logging_marker }}
 </VirtualHost>
 
 {% if apache_https %}
 <VirtualHost *:443>
-   ServerName {{ apache_hostname }}
-   ServerAlias {{ apache_fqdn }}
+  ServerName {{ apache_hostname }}
+  ServerAlias {{ apache_fqdn }}
 
-   # Logging
-   ErrorLog "{{ apache_log_path }}/{{ apache_hostname }}-ssl-error.log"
-   CustomLog "{{ apache_log_path }}/{{ apache_hostname }}-ssl-access.log" combined
+# BEGIN {{ apache_https_logging_marker }}
+  LogLevel {{ apache_log_level }}
+  ErrorLog "{{ apache_log_path }}/{{ apache_hostname }}-ssl-error.log"
+  CustomLog "{{ apache_log_path }}/{{ apache_hostname }}-ssl-access.log" combined
+# END {{ apache_https_logging_marker }}
 
-   SSLEngine on
+  SSLEngine on
 
-   #vSSLProtocol all -SSLv2
-   # SSLCipherSuite HIGH:MEDIUM:!aNULL:!MD5:!SEED:!IDEA
+  #vSSLProtocol all -SSLv2
+  # SSLCipherSuite HIGH:MEDIUM:!aNULL:!MD5:!SEED:!IDEA
 
-   SSLCertificateFile {{ ssl_certificate_path }}/{{ ssl_certificate_file }}
-   SSLCertificateKeyFile {{ ssl_certificate_key_path }}/{{ ssl_certificate_key_file }}
-   {% if ssl_certificate_chain_file | default(false) %}
-   SSLCertificateChainFile {{ ssl_certificate_path }}/{{ ssl_certificate_chain_file }}
-   {% endif %}
+  SSLCertificateFile {{ ssl_certificate_path }}/{{ ssl_certificate_file }}
+  SSLCertificateKeyFile {{ ssl_certificate_key_path }}/{{ ssl_certificate_key_file }}
+{% if ssl_certificate_chain_file | default(false) %}
+  SSLCertificateChainFile {{ ssl_certificate_path }}/{{ ssl_certificate_chain_file }}
+{% endif %}
 
 </VirtualHost>
 
+# BEGIN {{ apache_ssl_config_marker }}
 # Begin recommendations from:
 # https://www.digitalocean.com/community/tutorials/how-to-create-an-ssl-certificate-on-apache-for-centos-7
 # (in turn) from https://cipherli.st/
@@ -75,5 +82,6 @@ SSLStaplingCache "shmcb:logs/stapling-cache(150000)"
 # SSLSessionTickets Off
 
 {% endif %}
+# END {{ apache_ssl_config_marker }}
 
 {% endif %}

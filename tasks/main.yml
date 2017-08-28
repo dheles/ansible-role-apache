@@ -103,11 +103,10 @@
   notify: restart apache
   when: apache_remove_welcome
 
-  # TODO: apply something a little more nuanced than hardcoding "01_" prefix
 - name: configure apache
   template:
-    src: "templates/{{ apache_service }}.conf.j2"
-    dest: "/etc/{{ apache_service }}/conf.d/01_{{ apache_hostname }}.conf"
+    src: "{{ apache_config_template }}"
+    dest: "{{ apache_config_file }}"
   become: true
   notify: restart apache
 
