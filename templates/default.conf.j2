@@ -20,6 +20,10 @@
   ServerName {{ apache_hostname }}
   ServerAlias {{ apache_fqdn }}
 
+# BEGIN {{ apache_header_mod_marker }}
+  RequestHeader unset X-Forwarded-Host
+# END {{ apache_header_mod_marker }}
+
 # BEGIN {{ apache_https_logging_marker }}
   LogLevel {{ apache_log_level }}
   ErrorLog "{{ apache_log_path }}/{{ apache_hostname }}-ssl-error.log"

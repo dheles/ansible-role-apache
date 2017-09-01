@@ -13,6 +13,7 @@ apache_http_redirect_marker:    "http redirect"
 apache_http_logging_marker:     "http logging"
 apache_https_logging_marker:    "https logging"
 apache_ssl_config_marker:       "ssl config"
+apache_header_mod_marker:       "header modification"
 
 # SSL vars
 # NOTE: self-signed and provided cert booleans are mutually exclusive
