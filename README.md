@@ -20,6 +20,7 @@ Role Variables
     apache_log_path:                "/var/log/{{ apache_service }}"
     apache_log_level:               "warn"
     apache_debugging:               "{{ debugging | default(false) }}"
+    apache_trace_enabled:           false
     apache_config_file:             "/etc/{{ apache_service }}/conf.d/01_{{ apache_hostname }}.conf"
     apache_config_template:         "default.conf.j2"
     apache_http_redirect_marker:    "http redirect"
@@ -27,6 +28,7 @@ Role Variables
     apache_https_logging_marker:    "https logging"
     apache_ssl_config_marker:       "ssl config"
     apache_header_mod_marker:       "header modification"
+    apache_trace_marker:            "trace config"
 
     # SSL vars
     # NOTE: self-signed and provided cert booleans are mutually exclusive
@@ -67,4 +69,4 @@ Author Information
 ------------------
 
 Drew Heles
-Farooq Sadiq 
+Farooq Sadiq
