@@ -16,6 +16,8 @@ apache_https_logging_marker:    "https logging"
 apache_ssl_config_marker:       "ssl config"
 apache_header_mod_marker:       "header modification"
 apache_trace_marker:            "trace config"
+apache_proxy_tomcat:            false
+apache_proxy_tomcat_marker:     "proxying tomcat"
 
 # SSL vars
 # NOTE: self-signed and provided cert booleans are mutually exclusive

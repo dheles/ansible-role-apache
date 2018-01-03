@@ -6,6 +6,11 @@
 # BEGIN {{ apache_http_redirect_marker }}
   Redirect "/" "https://{{ apache_fqdn }}/"
 # END {{ apache_http_redirect_marker }}
+{% elif apache_proxy_tomcat %}
+# BEGIN {{ apache_proxy_tomcat_marker }}
+  ProxyPass           / ajp://localhost:8009/
+  ProxyPassReverse    / ajp://localhost:8009/
+# END {{ apache_proxy_tomcat_marker }}
 {% endif %}
 
 # BEGIN {{ apache_http_logging_marker }}
@@ -19,6 +24,13 @@
 <VirtualHost *:443>
   ServerName {{ apache_hostname }}
   ServerAlias {{ apache_fqdn }}
+
+{% if apache_proxy_tomcat %}
+# BEGIN {{ apache_proxy_tomcat_marker }}
+  ProxyPass           / ajp://localhost:8009/
+  ProxyPassReverse    / ajp://localhost:8009/
+# END {{ apache_proxy_tomcat_marker }}
+{% endif %}
 
 # BEGIN {{ apache_header_mod_marker }}
   RequestHeader unset X-Forwarded-Host
