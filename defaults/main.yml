@@ -9,7 +9,7 @@ apache_debugging:               "{{ debugging | default(false) }}"
 apache_trace_enabled:           false
 # TODO: apply something a little more nuanced than hardcoding "01_" prefix or simply remove
 apache_config_file:             "/etc/{{ apache_service }}/conf.d/01_{{ apache_hostname }}.conf"
-apache_config_template:         "default.conf.j2"
+apache_config_template:         "" # set to override
 apache_http_redirect_marker:    "http redirect"
 apache_http_logging_marker:     "http logging"
 apache_https_logging_marker:    "https logging"
@@ -18,6 +18,8 @@ apache_header_mod_marker:       "header modification"
 apache_trace_marker:            "trace config"
 apache_proxy_tomcat:            false
 apache_proxy_tomcat_marker:     "proxying tomcat"
+# to configure legacy apache and turn off SSL compression for apache < 2.4.3
+apache_legacy_configuration:    false
 
 # SSL vars
 # NOTE: self-signed and provided cert booleans are mutually exclusive
