@@ -103,12 +103,37 @@
   notify: restart apache
   when: apache_remove_welcome
 
+- name: determine which config template to use
+  block:
+  - name: use template from the calling playbook
+    set_fact:
+      config_template: "{{ apache_config_template }}"
+    when: apache_config_template != ""
+  - name: use legacy template
+    set_fact:
+      config_template: "legacy.conf.j2"
+    when: apache_config_template == "" and apache_legacy_configuration
+  - name: use default template
+    set_fact:
+      config_template: "default.conf.j2"
+    when: apache_config_template == "" and not apache_legacy_configuration
+  # end config template block
+
 - name: configure apache
   template:
-    src: "{{ apache_config_template }}"
+    src: "{{ config_template }}"
     dest: "{{ apache_config_file }}"
   become: true
   notify: restart apache
+
+- name: turn off SSL compression for version < 2.4.3
+  blockinfile:
+    block: "export OPENSSL_NO_DEFAULT_ZLIB=1"
+    dest: "/etc/sysconfig/httpd"
+    marker: "# {mark} disable ssl compression for apache < 2.4.3"
+  become: true
+  notify: restart apache
+  when: apache_legacy_configuration
 
 - name: check if apache service is running
   service:
